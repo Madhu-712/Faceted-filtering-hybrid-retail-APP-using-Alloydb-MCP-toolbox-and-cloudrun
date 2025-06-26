@@ -10,18 +10,25 @@ CREATE TABLE apparels (
   gender VARCHAR(200),
   embedding vector(768) );
 
+INSERT QUERIES FROM FILE >>
+
+UPDATE apparels SET embedding = embedding('text-embedding-005',content)::vector 
+WHERE content IS NOT NULL;
+
 CREATE INDEX idx_category ON apparels (category);
 CREATE INDEX idx_sub_category ON apparels (sub_category);
 CREATE INDEX idx_color ON apparels (color);
-CREATE INDEX idx_gender ON apparels (gender);
-
-CREATE INDEX patent_index ON patents_data 
-USING scann (abstract_embeddings cosine)
-WITH (num_leaves=32);  
+CREATE INDEX idx_gender ON apparels (gender); 
 
 SET scann.enable_inline_filtering = on;
 
 CREATE EXTENSION IF NOT EXISTS alloydb_scann;
+
+CREATE INDEX apparels_index ON apparels 
+USING scann (embedding cosine)
+WITH (num_leaves=32);
+
+
 
 
 
