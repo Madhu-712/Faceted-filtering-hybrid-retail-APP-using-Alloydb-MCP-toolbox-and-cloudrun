@@ -3,6 +3,7 @@ CREATE TABLE apparels (
   category VARCHAR(100), 
   sub_category VARCHAR(50), 
   uri VARCHAR(200), 
+  gsutil_uri VARCHAR(200),
   image VARCHAR(100), 
   content VARCHAR(2000), 
   pdt_desc VARCHAR(5000), 
@@ -21,9 +22,9 @@ WHERE pdt_desc IS NOT NULL;
 
 update apparels set img_embeddings = ai.image_embedding(
   model_id => 'multimodalembedding@001',
-  image => replace(uri, 'http://assets.myntassets.com/assets/images/40993/2018/3/14/','gs://img_public_test/apparels1/'),
+  image => gsutil_uri,
   mimetype => 'image/jpg')       
-where uri is not null;
+where gsutil_uri is not null;
 
 CREATE INDEX idx_category ON apparels (category);
 CREATE INDEX idx_sub_category ON apparels (sub_category);
@@ -31,6 +32,8 @@ CREATE INDEX idx_color ON apparels (color);
 CREATE INDEX idx_gender ON apparels (gender); 
 
 SET scann.enable_inline_filtering = on;
+SET scann.enable_preview_features = on; --(you cannot do this without restarting the instace, so better do it from the instance config console)
+
 
 CREATE EXTENSION IF NOT EXISTS alloydb_scann;
 
