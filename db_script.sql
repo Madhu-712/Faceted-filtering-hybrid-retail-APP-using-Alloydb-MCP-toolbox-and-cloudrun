@@ -14,7 +14,7 @@ CREATE TABLE apparels (
   additional_specification VARCHAR(100000));
 
 
-INSERT QUERIES FROM FILE >>
+INSERT QUERIES FROM FILE >> https://docs.google.com/spreadsheets/d/1Sc0piUotcoXe8BBwF_OUOPpGeMPmvPuiIdlErG0SxbQ/edit?usp=sharing
 
 
 UPDATE apparels SET embedding = embedding('text-embedding-005',pdt_desc)::vector 
