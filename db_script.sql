@@ -15,6 +15,10 @@ CREATE TABLE apparels (
 
 
 INSERT QUERIES FROM FILE >> https://docs.google.com/spreadsheets/d/1Sc0piUotcoXe8BBwF_OUOPpGeMPmvPuiIdlErG0SxbQ/edit?usp=sharing
+  
+  >> Source of data and license: https://www.kaggle.com/datasets/vikashrajluhaniwal/fashion-images/
+  >> License: https://github.com/AbiramiSukumaran/spanner-vertex-search/blob/main/data%20files/Data%20License%20-%20CC0%201.0%20Deed%20_%20CC0%201.0%20Universal%20_%20Creative%20Commons.pdf
+  
 
 
 UPDATE apparels SET embedding = embedding('text-embedding-005',pdt_desc)::vector 
