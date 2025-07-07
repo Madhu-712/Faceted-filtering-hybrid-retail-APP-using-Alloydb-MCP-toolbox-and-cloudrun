@@ -15,8 +15,9 @@ CREATE TABLE apparels (
 
 INSERT QUERIES FROM FILE >>
 
-UPDATE apparels SET embedding = embedding('text-embedding-005',content)::vector 
-WHERE content IS NOT NULL;
+
+UPDATE apparels SET embedding = embedding('text-embedding-005',pdt_desc)::vector 
+WHERE pdt_desc IS NOT NULL;
 
 update apparels set img_embeddings = ai.image_embedding(
   model_id => 'multimodalembedding@001',
