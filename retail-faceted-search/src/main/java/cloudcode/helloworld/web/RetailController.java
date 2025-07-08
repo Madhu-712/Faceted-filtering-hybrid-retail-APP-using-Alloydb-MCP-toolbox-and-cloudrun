@@ -27,13 +27,15 @@ public final class RetailController {
   public String helloWorld(Model model) throws Exception {
       ProductRepository productRepository = new ProductRepository();
       // Fetch filter values directly from the repository and add to the model
-      model.addAttribute("categories", productRepository.getDistinctCategories());
-      model.addAttribute("subCategories", productRepository.getDistinctSubCategories());
-      model.addAttribute("colors", productRepository.getDistinctColors());
-      model.addAttribute("genders", productRepository.getDistinctGenders());
       populateFilterModel(model, productRepository);
-      // Initially, load all products.
-      model.addAttribute("products", productRepository.getDataLists());
+      // Initially, load all products.    
+      List<List<String>> products = productRepository.getDataLists();
+      model.addAttribute("products", products);
+      // Add a message if no products are found.
+      if (!products.isEmpty() && CollectionUtils.isEmpty(products.get(0))) {
+        model.addAttribute("noProductsFound", "No products found.");
+      }
+      
       // Add an empty filters object to avoid errors in the view.
       model.addAttribute("selectedFilters", new Product());
       return "index";
