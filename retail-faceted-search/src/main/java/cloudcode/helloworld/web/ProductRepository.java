@@ -18,7 +18,7 @@ import com.google.gson.reflect.TypeToken;
 
 
 public class ProductRepository {
-    //Quality
+   
     public static final String TOOLBOX_ENDPOINT = "https://retail-product-search-quality-<<YOUR_PROJECT_NUMBER>>.us-central1.run.app";
     public static final String ALL_FILTERS = "FILTERS";
     /*
@@ -69,6 +69,9 @@ public class ProductRepository {
     Gson gson = new Gson();
     Type listType = new TypeToken<List<Map<String, String>>>() {}.getType();
     List<Map<String, String>> listOfMaps = gson.fromJson(filtersResponse, listType);
+    if (listOfMaps == null) {
+      return new ArrayList<>();
+    }
     return listOfMaps;
   }
 
@@ -166,11 +169,6 @@ public class ProductRepository {
     String[] sub_categories = (String[]) subCategoryFilters.stream().toArray(String[]::new);
     String[] colors = (String[]) colorFilters.stream().toArray(String[]::new);
     String[] genders = (String[]) genderFilters.stream().toArray(String[]::new); 
-
-    System.out.println("CATEGORIES ARRAY ************: " + categories[0]);
-    System.out.println("SUBCATEGORIES ARRAY ************: " + sub_categories[0]);
-    System.out.println("COLORS ARRAY ************: " + colors[0]);
-    System.out.println("GENDERS ARRAY ************: " + genders[0]);
 
     Product sendToToolbox = new Product();
     sendToToolbox.setCategories(categoryFilters);
