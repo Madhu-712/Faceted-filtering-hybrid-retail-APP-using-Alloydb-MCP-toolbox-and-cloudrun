@@ -1,0 +1,139 @@
+sources:
+    alloydb:
+        kind: "alloydb-postgres"
+        project: "<<YOUR_PROJECT_ID>>"
+        region: "<<YOUR_LOCATION>>""
+        cluster: "vector-cluster"
+        instance: "vector-instance"
+        database: "postgres"
+        user: "postgres"
+        password: "alloydb"
+        
+tools:
+   get-retail-facet-filters:
+    kind: postgres-sql
+    source: alloydb
+    description: Get the list of facet filter values from the retail dataset.
+    statement: |
+      SELECT distinct id, content, uri, category, sub_category,color,gender FROM apparels;
+   filtered-vector-search-quality:
+     kind: postgres-sql
+     source: alloydb
+     description: Get the list of selected facet filter values from the retail dataset.
+     parameters:
+        - name: categories
+          type: array
+          description: List of categories preferred by the user.
+          items:
+            name: category 
+            type: string
+            description: Category value. 
+        - name: subCategories
+          type: array
+          description: List of sub-categories preferred by the user.
+          items:
+            name: subCategory 
+            type: string
+            description: Sub-Category value.
+        - name: colors
+          type: array
+          description: List of colors preferred by the user.
+          items:
+            name: color 
+            type: string
+            description: Color value.
+        - name: genders
+          type: array
+          description: List of genders preferred by the user for apparel fitting.
+          items:
+            name: gender 
+            type: string
+            description: Gender name.
+        - name: searchtext
+          type: string
+          description: Description of the product that the user wants to find database matches for.    
+     statement: |
+          WITH 
+          apparels_temp as (
+          select * from (
+          WITH initial_ranking AS (
+                  SELECT id,content, pdt_desc, uri, category, sub_category,color,gender,
+                  ROW_NUMBER() OVER () AS ref_number 
+                  FROM apparels 
+                  where category = ANY($1) and sub_Category = ANY($2) and color = ANY($3) and gender = ANY($4)
+                      order by embedding <=>embedding('text-embedding-005',$5)::vector),
+                  reranked_results AS (
+                              SELECT index, score from 
+                              ai.rank(
+                                model_id => 'semantic-ranker-default-003',
+                                search_string => $5,
+                                documents => (SELECT ARRAY_AGG(pdt_desc ORDER BY ref_number) FROM initial_ranking)
+                              )
+                  )
+                  SELECT id,content, pdt_desc, uri, category, sub_category,color,gender, score
+                  FROM initial_ranking, reranked_results 
+                  WHERE initial_ranking.ref_number = reranked_results.index
+                  ORDER BY reranked_results.score DESC
+                  limit 25
+          ) as x),
+          prompt AS (
+          SELECT 'You are a friendly advisor helping to filter whether a product match' || pdt_desc || 'is reasonably (not necessarily 100% but contextually in agreement) related to the customer''s request: ' || $5 || '. Respond only in YES or NO. Do not add any other text.'
+          AS prompt_text, *
+          from apparels_temp
+          )
+          ,
+          response AS (
+          SELECT id,content,pdt_desc,uri,
+                  json_array_elements(ml_predict_row('projects/abis-345004/locations/us-central1/publishers/google/models/gemini-1.5-pro:streamGenerateContent',
+                  json_build_object('contents',
+                  json_build_object('role',
+                  'user',
+                  'parts',
+                  json_build_object('text', prompt_text)))))->'candidates'->0->'content'->'parts'->0->'text' AS resp
+          FROM 
+                  prompt)
+          SELECT id, content,uri,replace(replace(resp::text,'\n',''),'"','') as result
+          FROM
+                  response where replace(replace(resp::text,'\n',''),'"','') in ('YES', 'NO')
+                  limit 10;     
+
+   filtered-vector-search:
+    kind: postgres-sql
+    source: alloydb
+    description: Get the list of facet filter values from the retail dataset.
+    parameters:
+      - name: categories
+        type: array
+        description: List of categories preferred by the user.
+        items:
+          name: category 
+          type: string
+          description: Category value. 
+      - name: subCategories
+        type: array
+        description: List of sub-categories preferred by the user.
+        items:
+          name: subCategory 
+          type: string
+          description: Sub-Category value.
+      - name: colors
+        type: array
+        description: List of colors preferred by the user.
+        items:
+          name: color 
+          type: string
+          description: Color value.
+      - name: genders
+        type: array
+        description: List of genders preferred by the user for apparel fitting.
+        items:
+          name: gender 
+          type: string
+          description: Gender name.
+      - name: searchtext
+        type: string
+        description: Description of the product that the user wants to find database matches for.    
+    statement: |
+      SELECT id, content, uri, category, sub_category,color,gender FROM apparels 
+      where category = ANY($1) and sub_Category = ANY($2) and color = ANY($3) and gender = ANY($4)
+      order by embedding <=> embedding('text-embedding-005',$5)::vector limit 10 ;
