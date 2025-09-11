@@ -1,64 +1,29 @@
-package cloudcode.helloworld.web;
+package cloudcode.helloworld;
 
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import java.util.List;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/** Defines a controller to handle HTTP requests */
-@Controller
-public final class RetailController {
+/** This class serves as an entry point for the Spring Boot app. */
+@SpringBootApplication
+public class RetailApplication {
 
-  private static String project;
-  private static final Logger logger = LoggerFactory.getLogger(RetailController.class);
-  
-  /**
-   * Create an endpoint for the landing page
-   *
-   * @param model The model to which attributes will be added.
-   * @return the index view template
-   * @throws Exception if an error occurs while fetching filters.
-   */
-  @GetMapping("/")
-  public String helloWorld(Model model) throws Exception {
-      ProductRepository productRepository = new ProductRepository();
-      // Fetch filter values directly from the repository and add to the model
-      model.addAttribute("categories", productRepository.getDistinctCategories());
-      model.addAttribute("subCategories", productRepository.getDistinctSubCategories());
-      model.addAttribute("colors", productRepository.getDistinctColors());
-      model.addAttribute("genders", productRepository.getDistinctGenders());
-      populateFilterModel(model, productRepository);
-      // Initially, load all products.
-      model.addAttribute("products", productRepository.getDataLists());
-      // Add an empty filters object to avoid errors in the view.
-      model.addAttribute("selectedFilters", new Product());
-      return "index";
+  private static final Logger logger = LoggerFactory.getLogger(RetailApplication.class);
+
+  public static void main(final String[] args) throws Exception {
+    String port = System.getenv("PORT");
+    if (port == null) {
+      port = "8080";
+      logger.warn("$PORT environment variable not set, defaulting to 8080");
+    }
+    SpringApplication app = new SpringApplication(RetailApplication.class);
+    app.setDefaultProperties(Collections.singletonMap("server.port", port));
+
+    // Start the Spring Boot application.
+    app.run(args);
+    logger.info(
+        "Hello from Cloud Run! The container started successfully and is listening for HTTP requests on " + port);
   }
-  
-  @GetMapping("/search")
-  public String vectorSearch(Product productFilters, Model model) throws Exception {
-      ProductRepository productRepository = new ProductRepository();
-      // Fetch all possible filter values to display on the page.
-      populateFilterModel(model, productRepository);
-
-      // Call the new method to get the filtered results.
-      List<List<String>> filteredProducts = productRepository.getFilteredResultList(productFilters);
-      model.addAttribute("products", filteredProducts);
-
-      // Add the submitted filters to the model to re-check the selected boxes.
-      model.addAttribute("selectedFilters", productFilters);
-      return "index";
-  }
-
-  private void populateFilterModel(Model model, ProductRepository productRepository) throws Exception {
-    model.addAttribute("categories", productRepository.getDistinctCategories());
-    model.addAttribute("subCategories", productRepository.getDistinctSubCategories());
-    model.addAttribute("colors", productRepository.getDistinctColors());
-    model.addAttribute("genders", productRepository.getDistinctGenders());
-  }
-
 }
