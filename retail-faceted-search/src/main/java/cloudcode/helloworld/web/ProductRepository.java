@@ -19,7 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class ProductRepository {
    
-    public static final String TOOLBOX_ENDPOINT = "https://retail-product-search-quality-<<YOUR_PROJECT_NUMBER>>.us-central1.run.app";
+    public static final String TOOLBOX_ENDPOINT = "https://retail-product-search-quality-273845608377.us-central1.run.app";
     public static final String ALL_FILTERS = "FILTERS";
     /*
    * Method called for invoking all filter values for the app.
