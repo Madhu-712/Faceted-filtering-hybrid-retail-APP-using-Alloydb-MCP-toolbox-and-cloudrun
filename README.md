@@ -35,3 +35,4 @@ This project demonstrates a hybrid search application for a retail use case, lev
 ## Cleanup
 
 *   Follow the instructions in the codelab to clean up the deployed resources to avoid incurring further charges.
+  https://codelabs.developers.google.com/hybrid-search-on-cloudrun#6
