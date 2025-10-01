@@ -1,2 +1,2 @@
-# faceted_searching_retail
-This app demonstrates faceted searching using AlloyDB
+# Faceted-filtering-hybrid-retail-APP-using-Alloydb-MCP-toolbox-and-cloudrun
+Faceted filtering hybrid retail APP using Alloydb,MCP toolbox and cloudrun
